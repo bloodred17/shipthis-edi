@@ -1,32 +1,62 @@
-/**
- * Some predefined delay values (in milliseconds).
- */
-export enum Delays {
-  Short = 500,
-  Medium = 2000,
-  Long = 5000,
+import { validate } from 'class-validator';
+import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from './edi-serializer';
+
+const syntaxIdentifierCompositeElement = new EdifactCompositeElement({
+  name: 'syntax_identifier',
+  tag: 'S001',
+  status: UseStatus.M,
+  elements: [
+    {
+      tag: '0001',
+      status: UseStatus.M,
+      format: 'a..4',
+      name: 'syntax_identifier'
+    },
+    {
+      name: 'syntax_version_number',
+      tag: '0002',
+      status: UseStatus.M,
+      format: 'an..1',
+    }
+  ]
+});
+
+const segment = new EdifactSegment({
+  name: 'interchange_header',
+  tag: 'UNB',
+  elements: [
+    syntaxIdentifierCompositeElement
+  ]
+});
+
+const renderSegment = (segment: EdifactSegment, data: any) => {
+  let result = '';
+  for (const element of segment.elements) {
+    result += '+';
+    if (element instanceof EdifactCompositeElement) {
+      for (const [i, dataElement] of Object.entries(element.elements)) {
+        result += ((+i > 0) ? ':' : '') + data[dataElement.name]
+      }
+    }
+    if (element instanceof EdifactElement) {
+      result += data[element.name]
+    }
+  }
+
+  console.log(data);
+  return `${segment.tag}${result}'`
 }
 
-/**
- * Returns a Promise<string> that resolves after a given time.
- *
- * @param {string} name - A name.
- * @param {number=} [delay=Delays.Medium] - A number of milliseconds to delay resolution of the Promise.
- * @returns {Promise<string>}
- */
-function delayedHello(
-  name: string,
-  delay: number = Delays.Medium,
-): Promise<string> {
-  return new Promise((resolve: (value?: string) => void) =>
-    setTimeout(() => resolve(`Hello, ${name}`), delay),
-  );
-}
 
-// Below are examples of using ESLint errors suppression
-// Here it is suppressing a missing return type definition for the greeter function.
+(async () => {
+  const errors = await validate(segment);
+  console.log(errors);
+  // console.log(segment)
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export async function greeter(name: string) {
-  return await delayedHello(name, Delays.Long);
-}
+  const data = {
+    syntax_identifier: 'UNOB',
+    syntax_version_number: '4'
+  }
+
+  console.log(renderSegment(segment, data));
+})()

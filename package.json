@@ -29,11 +29,15 @@
     "lint": "eslint . --ext .ts,.tsx",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
-    "build:dev": "npm run build && npm run start"
+    "build:dev": "npm run build && npm run start",
+    "dev": "ts-node src/main.ts"
   },
   "author": "Jakub Synowiec <jsynowiec@users.noreply.github.com>",
   "license": "Apache-2.0",
   "dependencies": {
+    "class-validator": "^0.13.2",
+    "edifact": "^1.2.12",
+    "htmlparser2": "^7.2.0",
     "tslib": "~2.3.1"
   },
   "volta": {
