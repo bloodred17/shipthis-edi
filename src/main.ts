@@ -1,62 +1,63 @@
 import { validate } from 'class-validator';
-import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from './edi-serializer';
+import { EdifactCompositeElement, EdifactElement, EdifactSegment, validateValue } from './edi-serializer';
+import { interchangeHeaderSegment } from './interchange-header.segment';
 
-const syntaxIdentifierCompositeElement = new EdifactCompositeElement({
-  name: 'syntax_identifier',
-  tag: 'S001',
-  status: UseStatus.M,
-  elements: [
-    {
-      tag: '0001',
-      status: UseStatus.M,
-      format: 'a..4',
-      name: 'syntax_identifier'
-    },
-    {
-      name: 'syntax_version_number',
-      tag: '0002',
-      status: UseStatus.M,
-      format: 'an..1',
-    }
-  ]
-});
 
-const segment = new EdifactSegment({
-  name: 'interchange_header',
-  tag: 'UNB',
-  elements: [
-    syntaxIdentifierCompositeElement
-  ]
-});
+// const edifactData = [];
+// for (const element of segment.elements) {
+//   if (element instanceof EdifactCompositeElement) {
+//     for (const dataElement of element.elements) {
+//       edifactData.push(dataElement.name);
+//     }
+//   }
+//   if (element instanceof EdifactElement) {
+//     edifactData.push(element.name);
+//   }
+// }
+// export type EdifactData = typeof edifactData[number];
 
-const renderSegment = (segment: EdifactSegment, data: any) => {
+
+const renderSegment = (segment: EdifactSegment, data) => {
   let result = '';
   for (const element of segment.elements) {
     result += '+';
     if (element instanceof EdifactCompositeElement) {
       for (const [i, dataElement] of Object.entries(element.elements)) {
-        result += ((+i > 0) ? ':' : '') + data[dataElement.name]
+        const value = data[dataElement.name];
+        if (value === null || value === undefined) {
+          throw new Error(`${dataElement.name} can not be ${value}`)
+        }
+        const condition = validateValue(dataElement, value);
+        if (!condition) {
+          throw new Error(`${dataElement.name} cannot be ${condition}`)
+        }
+        console.log(dataElement.name, condition)
+        if (condition) {
+          result += ((+i > 0) ? ':' : '') + value;
+        }
       }
     }
     if (element instanceof EdifactElement) {
       result += data[element.name]
     }
   }
-
-  console.log(data);
   return `${segment.tag}${result}'`
 }
 
 
 (async () => {
-  const errors = await validate(segment);
+  const errors = await validate(interchangeHeaderSegment);
   console.log(errors);
   // console.log(segment)
 
   const data = {
     syntax_identifier: 'UNOB',
-    syntax_version_number: '4'
+    syntax_version_number: '4',
+    interchange_sender_identification: '12345678ABC',
+    interchange_code_qualifier: '',
+    interchange_sender_internal_identification: 'ABCDEFGHIJKLMNOP',
+    interchange_sender_internal_sub_identification: 'SPCAS2'
   }
 
-  console.log(renderSegment(segment, data));
+  console.log(renderSegment(interchangeHeaderSegment, data));
 })()
