@@ -1,7 +1,7 @@
 import {
   IsEnum, IsIn,
   IsNotEmpty, IsNumber, IsOptional,
-  IsString, Length, Validate, ValidateNested,
+  IsString, Length, validate, Validate, ValidateNested,
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
@@ -192,16 +192,88 @@ export function validateValue(element: EdifactElement, value: string): boolean {
         break;
 
       case 'n':
-        condition = /^[0-9]+$/.test(value);
+        condition = /(^[0-9]+[0-9.]+[0-9]+$)|(^[0-9]+$)/.test(value);
         if (!condition) throw new Error(`${name} should be numeric`);
         break;
 
       case 'an':
-        condition = /^[a-zA-Z0-9]+$/.test(value);
+        condition = /^[a-zA-Z0-9,\-\s]+$/.test(value);
         if (!condition) throw new Error(`${name} should be alpha numeric`);
         break;
     }
   }
 
   return condition;
+}
+
+export const renderSegment = (segment: EdifactSegment, data): string => {
+  let result = '';
+  for (const element of segment.elements) {
+    result += '+';
+    if (element instanceof EdifactCompositeElement) {
+      for (const [i, dataElement] of Object.entries(element.elements)) {
+        const value = data[dataElement.name];
+        if ((value === null || value === undefined)) {
+          if ((dataElement.status === UseStatus.M)) {
+            throw new Error(`'${element?.name} -> ${dataElement.name}' can not be ${value}`)
+          } else {
+            break;
+          }
+        }
+        const condition = validateValue(dataElement, value);
+        if (!condition) {
+          throw new Error(`'${element?.name} -> ${dataElement.name}' can not be ${condition}`)
+        }
+        if (condition) {
+          result += ((+i > 0) ? ':' : '') + value;
+        }
+      }
+    }
+    if (element instanceof EdifactElement) {
+      const value = data[element.name];
+      if (value === null || value === undefined) {
+        if (element.status === UseStatus.M) {
+          throw new Error(`'${element.name}' can not be ${value}`)
+        } else {
+          break;
+        }
+      }
+      const condition = validateValue(element, value);
+      if (!condition) {
+        throw new Error(`'${element.name}' can not be ${condition}`)
+      }
+      if (condition) {
+        result += data[element.name]
+      }
+    }
+  }
+  return `${segment.tag}${result}'`
+}
+
+export class Interchange {
+  una: EdifactSegment;
+  unb: EdifactSegment;
+  message: EdifactSegment[];
+  unz: EdifactSegment;
+}
+
+export interface Message {
+  segment: EdifactSegment;
+  data: any;
+}
+
+export const renderInterchangeMessage = async (messages: Message[]) => {
+  let result = '';
+  for (const message of messages) {
+    const errors = await validate(message.segment);
+    if (errors?.length > 0) {
+      console.log(JSON.stringify(errors, undefined, 2));
+      throw new Error(`${message.segment.name} validation failed`);
+    }
+    const msg = renderSegment(message.segment, message.data);
+    result += msg;
+    console.log(msg);
+    // console.log('\n');
+  }
+  return result;
 }
