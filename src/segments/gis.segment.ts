@@ -1,4 +1,4 @@
-import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../edi-serializer';
+import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../serializer';
 
 export const customsValuationMethodSegment = new EdifactSegment({
   name: 'customs_valuation_method',

@@ -1,8 +1,11 @@
-import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../edi-serializer';
+import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../serializer';
 
-export const messageHeaderSegment = new EdifactSegment({
+export const unhSegment = new EdifactSegment({
   name: 'message_header',
   tag: 'UNH',
+  counter: '0010',
+  number: 2,
+  level: 0,
   elements: [
     new EdifactElement({
       name: 'message_reference_number',

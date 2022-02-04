@@ -1,4 +1,5 @@
-import { renderInterchangeMessage } from './edi-serializer';
+import 'reflect-metadata';
+import { renderInterchangeMessage } from './serializer';
 import { commercialInvoiceSegment } from './segments/doc.segment';
 import {
   actualArrivalDateSegment,
@@ -25,13 +26,13 @@ import {
   customsStatusOfGoods2Segment,
   customsStatusOfGoodsSegment,
 } from './segments/cst.segment';
-import { interchangeHeaderSegment } from './segments/interchange-header.segment';
+import { unbSegment } from './segments/unb.segment';
 import {
   customsLineItemMeasurementSegment,
   specifiedTariffQuantity1Segment, specifiedTariffQuantity2Segment, specifiedTariffQuantity3Segment,
   totalGrossWeightSegment, warehouseKeeperSegment,
 } from './segments/mea.segment';
-import { messageHeaderSegment } from './segments/message-header.segment';
+import { unhSegment } from './segments/unh.segment';
 import {
   cifcValueAmountSegment, customsDutyAmountSegment,
   customsValueAmountSegment,
@@ -633,9 +634,9 @@ import { interchangeTrailerSegment } from './segments/unz.segment';
     interchange_control_reference: 'X'
   };
 
-  await renderInterchangeMessage([
-    { segment: interchangeHeaderSegment, data: interchangeHeaderData },
-    { segment: messageHeaderSegment, data: messageHeaderData },
+  const interchangeMessage = await renderInterchangeMessage([
+    { segment: unbSegment, data: interchangeHeaderData },
+    { segment: unhSegment, data: messageHeaderData },
     { segment: beginningOfMessageSegment, data: beginningOfMessageData },
     { segment: customsStatusOfGoodsSegment, data: customsStatusOfGoodsData },
     { segment: locationOfGoodsSegment, data: locationOfGoodsData },
@@ -718,5 +719,7 @@ import { interchangeTrailerSegment } from './segments/unz.segment';
     { segment: messageTrailerSegment, data: messageTrailerData },
     { segment: interchangeTrailerSegment, data: interchangeTrailerData },
   ]);
+
+  console.log(interchangeMessage);
 
 })()

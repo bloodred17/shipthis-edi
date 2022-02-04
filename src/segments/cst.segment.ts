@@ -1,4 +1,4 @@
-import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../edi-serializer';
+import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../serializer';
 
 export const customsStatusOfGoodsSegment = new EdifactSegment({
   name: 'customs_status_of_goods',

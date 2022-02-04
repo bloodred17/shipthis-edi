@@ -1,4 +1,4 @@
-import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../edi-serializer';
+import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../serializer';
 
 export const totalGrossWeightSegment = new EdifactSegment({
   name: 'measurement',
@@ -181,7 +181,7 @@ export const customsLineItemMeasurementSegment = new EdifactSegment({
 
 export const warehouseKeeperSegment = new EdifactSegment({
   name: 'party_qualifier',
-  tag: '3035',
+  tag: 'NAD',
   elements: [
     new EdifactElement({
       name: 'party_qualifier',

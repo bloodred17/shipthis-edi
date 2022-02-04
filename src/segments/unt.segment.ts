@@ -1,4 +1,4 @@
-import { EdifactElement, EdifactSegment, UseStatus } from '../edi-serializer';
+import { EdifactElement, EdifactSegment, UseStatus } from '../serializer';
 
 export const messageTrailerSegment = new EdifactSegment({
   name: 'message_trailer',

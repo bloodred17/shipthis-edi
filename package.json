@@ -35,9 +35,11 @@
   "author": "Jakub Synowiec <jsynowiec@users.noreply.github.com>",
   "license": "Apache-2.0",
   "dependencies": {
+    "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "edifact": "^1.2.12",
     "htmlparser2": "^7.2.0",
+    "reflect-metadata": "^0.1.13",
     "tslib": "~2.3.1"
   },
   "volta": {

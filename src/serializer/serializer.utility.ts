@@ -1,36 +1,6 @@
-import {
-  IsEnum, IsIn,
-  IsNotEmpty, IsNumber, IsOptional,
-  IsString, Length, validate, Validate, ValidateNested,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-} from 'class-validator';
-
-
-export enum UseStatus {
-  M = 'mandatory',
-  C = 'conditional'
-}
-const elementValueTypes = ['a', 'n', 'an'];
-export type ElementValueType = typeof elementValueTypes[number];
-// export type ElementValueType = 'a' | 'n' | 'an';
-
-const lengthTypes = ['fixed', 'variable'];
-export type LengthType = typeof lengthTypes[number];
-// export type LengthType = 'fixed' | 'variable';
-
-export interface Pattern {
-  name: string,
-  regex: RegExp,
-}
-export const patterns: Pattern[] = [
-  { name: 'a_fixed', regex: /(^a+[0-9]+)/ },
-  { name: 'an_fixed', regex: /(^an+[0-9]+)/ },
-  { name: 'n_fixed', regex: /(^n+[0-9]+)/ },
-  { name: 'a_variable', regex: /(^a\.\.+[0-9]+)/ },
-  { name: 'an_variable', regex: /(^an\.\.+[0-9]+)/ },
-  { name: 'n_variable', regex: /(^n\.\.+[0-9]+)/ },
-];
+import { validate } from 'class-validator';
+import { EdifactCompositeElement, EdifactElement, EdifactSegment } from './serializer.classes';
+import { ElementValueType, LengthType, Message, Pattern, patterns, UseStatus } from './serializer.types';
 
 export function getElementFormat(str: string): {
   valueType: ElementValueType,
@@ -56,113 +26,7 @@ export function getElementFormat(str: string): {
   };
 }
 
-@ValidatorConstraint({ name: 'format', async: false })
-export class Format implements ValidatorConstraintInterface {
-  validate(text: string) {
-    try {
-      const {valueType, lengthType, length} = getElementFormat(text);
-      return ['a', 'an', 'n'].includes(valueType) &&
-        ['fixed', 'variable'].includes(lengthType) && !isNaN(length);
-    } catch (e) {
-      return false;
-    }
-  }
-
-  defaultMessage() {
-    return `Incorrect format`;
-  }
-}
-
-export class EdifactElement {
-  @IsNotEmpty()
-  @IsString()
-  tag: string;
-
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
-  @IsEnum(UseStatus)
-  status: UseStatus;
-
-  @IsOptional()
-  @IsString()
-  @Validate(Format)
-  format?: string;
-
-  @IsOptional()
-  @IsString()
-  @Length(1,2)
-  @IsIn(elementValueTypes)
-  valueType?: ElementValueType;
-
-  @IsOptional()
-  @IsString()
-  @IsIn(lengthTypes)
-  lengthType?: LengthType;
-
-  @IsOptional()
-  @IsNumber()
-  maxLength?: number;
-
-  constructor(init?: Partial<EdifactElement>) {
-    if (init) {
-      Object.assign(this, init);
-    }
-  }
-
-  set _format(value: string) {
-    this.format = value;
-    const { valueType, lengthType, length } = getElementFormat(value);
-    this.valueType = valueType;
-    this.lengthType = lengthType;
-    this.maxLength = length;
-  }
-}
-
-export class EdifactCompositeElement {
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  tag: string;
-
-  @IsEnum(UseStatus)
-  status: UseStatus;
-
-  @ValidateNested()
-  elements: EdifactElement[];
-
-  constructor(init?: Partial<EdifactCompositeElement>) {
-    if (init) {
-      Object.assign(this, init);
-    }
-  }
-}
-
-export class EdifactSegment {
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  tag: string;
-
-  @ValidateNested()
-  elements: (EdifactElement | EdifactCompositeElement)[];
-
-  constructor(init?: Partial<EdifactSegment>) {
-    if (init) {
-      Object.assign(this, init);
-    }
-  }
-}
-
 export function validateValue(element: EdifactElement, value: string): boolean {
-  // console.log(element, value)
   const { valueType, lengthType, maxLength, name } = element;
   let condition: boolean;
 
@@ -255,19 +119,6 @@ export const renderSegment = (segment: EdifactSegment, data): string => {
     result += '+' + res;
   }
   return `${segment.tag}${result}'`
-}
-
-export class Interchange {
-  una: EdifactSegment;
-  unb: EdifactSegment;
-  message: EdifactSegment[];
-  unz: EdifactSegment;
-}
-
-export interface Message {
-  counter?: number;
-  segment: EdifactSegment;
-  data: any;
 }
 
 export const renderInterchangeMessage = async (messages: Message[]) => {

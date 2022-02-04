@@ -1,8 +1,11 @@
-import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../edi-serializer';
+import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../serializer';
 
 export const beginningOfMessageSegment = new EdifactSegment({
   name: 'beginning_of_message',
   tag: 'BGM',
+  counter: '0020',
+  number: 3,
+  level: 0,
   elements: [
     new EdifactCompositeElement({
       name: 'document_message_name',

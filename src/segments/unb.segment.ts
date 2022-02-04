@@ -1,8 +1,11 @@
-import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../edi-serializer';
+import { EdifactCompositeElement, EdifactElement, EdifactSegment, UseStatus } from '../serializer';
 
-export const interchangeHeaderSegment = new EdifactSegment({
+export const unbSegment = new EdifactSegment({
   name: 'interchange_header',
   tag: 'UNB',
+  counter: '0000',
+  number: 1,
+  level: 0,
   elements: [
     new EdifactCompositeElement({
       name: 'syntax_identifier',
