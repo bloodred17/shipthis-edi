@@ -259,7 +259,7 @@ export const customsDutyAmountSegment = new EdifactSegment({
           name: 'monetary_amount',
           tag: '5004',
           status: UseStatus.C,
-          _format: 'an..3'
+          _format: 'n..12'
         }),
       ],
     }),
