@@ -1,33 +1,79 @@
 import { renderInterchangeMessage } from './edi-serializer';
+import { commercialInvoiceSegment } from './segments/doc.segment';
 import {
   actualArrivalDateSegment,
-  estimatedDateOfArrivalSegment, houseWaybillDateSegment,
+  estimatedDateOfArrivalSegment, houseWaybillDateSegment, invoiceDateSegment,
   presentationDateOfGoodsDeclarationSegment, transportDocumentDateSegment,
 } from './segments/dtm.segment';
 import { containerInformationSegment } from './segments/eqd.segment';
-import { lineItemSegment } from './segments/ftx.segment';
+import {
+  additionalInformationSg30Segment,
+  customsClearanceInstructionsSegment,
+  goodsDescriptionSegment,
+  lineItemSegment,
+} from './segments/ftx.segment';
 import { customsValuationMethodSegment, dutyTaxSegment, refundAcknowledgementIndicator } from './segments/gis.segment';
 import {
-  countryOfExplorationDespatchSegment,
+  countryOfExplorationDespatchSegment, countryOfOriginSegment,
   customsOfficeOfDestinationSegment,
   customsOfficeOfDestinationTransitSegment,
   locationOfGoodsSegment, placeOfLodgementOfDocumentsSegment, placePortOfLoadingSegment,
   warehouseSegment,
 } from './segments/loc.segment';
 import { beginningOfMessageSegment } from './segments/bgm.segment';
-import { customsStatusOfGoodsSegment } from './segments/cst.segment';
+import {
+  customsStatusOfGoods2Segment,
+  customsStatusOfGoodsSegment,
+} from './segments/cst.segment';
 import { interchangeHeaderSegment } from './segments/interchange-header.segment';
-import { totalGrossWeightSegment } from './segments/mea.segment';
+import {
+  customsLineItemMeasurementSegment,
+  specifiedTariffQuantity1Segment, specifiedTariffQuantity2Segment, specifiedTariffQuantity3Segment,
+  totalGrossWeightSegment, warehouseKeeperSegment,
+} from './segments/mea.segment';
 import { messageHeaderSegment } from './segments/message-header.segment';
+import {
+  cifcValueAmountSegment, customsDutyAmountSegment,
+  customsValueAmountSegment,
+  invoiceItemAmountSegment, overpaidExciseAccountAmountSegment, taxExportAmountSegment,
+  taxImportsAmountSegment,
+  taxImportsExportsAmountSegment, transactionAmountSegment, underpaidExciseAccountAmountSegment,
+} from './segments/moa.segment';
+import {
+  agentNameAndAddressSegment,
+  importerNameAndAddressSegment,
+  masterCargoCarrierNameSegment,
+  messageSenderNameSegment,
+  ownerNameSegment,
+  supplierNameAndAddressSegment,
+  transporterNameAndAddressSegment,
+  unregisteredTraderNameAndAddressSegment,
+  vesselsAgentNameSegment,
+} from './segments/nad.segment';
 import { numberOfPackagesSegment } from './segments/pac.segment';
 import { marksAndNumbersSegment } from './segments/pci.segment';
 import {
-  deferredPaymentReferenceSegment,
+  additionalReferenceNumberSegment,
+  deferredPaymentReferenceSegment, enquiryNumberSegment,
   houseBillOfLadingNumberSegment,
   originalMrnSegment,
-  previousProcedureMrnSegment,
-  transportDocumentNumberSegment, uniqueConsignmentNumberSegment,
+  previousProcedureMrnSegment, importerReferenceSegment,
+  transportDocumentNumberSegment, uniqueConsignmentNumberSegment, exporterReferenceSegment, warehouseEntryNumberSegment,
 } from './segments/rff.segment';
+import {
+  cifcValueTaxSegment, customsDutyFeeSegment,
+  importAndExportTaxSegment, overpaidExciseAccountFeeSegment,
+  taxDetailsSegment,
+  taxExportsFeeDetailsSegment,
+  totalDutiesDueAmountSegment,
+  totalDutiesDueFeeSegment,
+  totalVatDueFeeSegment,
+  transactionFeeDetailsSegment, underpaidExciseAccountFeeSegment,
+} from './segments/tax.segment';
+import { detailsOfTransportSegment } from './segments/tdt.segment';
+import { sectionControlSegment } from './segments/uns.segment';
+import { messageTrailerSegment } from './segments/unt.segment';
+import { interchangeTrailerSegment } from './segments/unz.segment';
 
 
 (async () => {
@@ -253,6 +299,340 @@ import {
     reference_number: '12345678A0000000001'
   };
 
+  const additionalReferenceNumberData = {
+    reference_qualifier: 'ACD',
+    reference_number: 'REF000000001'
+  };
+
+  const enquiryNumberData = {
+    reference_qualifier: 'AAV',
+    reference_number: '87654321'
+  };
+
+  const detailsOfTransportData = {
+    transport_stage_qualifier: '20',
+    conveyance_reference_number: 'SQ 1234',
+    mode_of_transport_coded: '04',
+    mode_of_transport: '03',
+    type_of_means_of_transport_identification: '',
+    carrier_identification: '',
+    excess_transportation_reason: '',
+    id_means_of_transport: '',
+    code_list_qualifier: '',
+    code_list_responsible_agency: '',
+    id_of_the_means_of_transport: 'ABC Transport'
+  };
+
+  const commercialInvoiceData = {
+    document_message_name_coded: '380',
+    document_message_number: 'AB2019ZA0123'
+  };
+
+  const invoiceDateData = {
+    date_time_period_qualifier: '3',
+    date_time_period: '20190228',
+    date_time_period_format_qualifier: '102'
+  };
+
+  const importerNameAndAddressData = {
+    party_qualifier: 'IM',
+    importer_code: '12345678',
+    name_and_address_line: '',
+    importer_name: 'ABC IMPORTERS',
+    importer_street_name_and_number: 'ABC STREET 123',
+    importer_building_name_and_floor: 'BUILDING A FLOOR 2',
+    importer_suburb: 'PRETORIA',
+    city_name: 'GAUTENG',
+    country_identification: '',
+    postcode_identification: '0001'
+  };
+
+  const importerReferenceData = {
+    reference_qualifier: 'VA',
+    reference_number: '0123456789'
+  };
+
+  const agentNameAndAddressData = {
+    party_qualifier: 'AG',
+    agent_code: '12345678'
+  };
+
+  const transporterNameAndAddressData = {
+    party_qualifier: 'AF',
+    transporter_code: '12345678'
+  };
+
+  const supplierNameAndAddressData = {
+    party_qualifier: 'SU',
+    supplier_code: '12345678',
+    name_and_address_line: '',
+    supplier_name: 'ABC Suppliers',
+    supplier_street_name_and_number: 'ABC Street 123',
+    supplier_building_name_and_floor: 'Building A Floor 1',
+    supplier_suburb: 'Pretoria',
+    supplier_city_town: 'GAUTENG',
+    country_identification: '',
+    supplier_street_code: '0001'
+  };
+
+  const exporterReferenceData = {
+    reference_qualifier: 'VA',
+    reference_number: '1234567890'
+  };
+
+  const messageSenderNameData = {
+    party_qualifier: 'MS',
+    message_sender: 'ABC'
+  };
+
+  const ownerNameData = {
+    party_qualifier: 'BY',
+    owner_code: '12345678'
+  };
+
+  const unregisteredTraderNameAndAddressData = {
+    party_qualifier: 'DT',
+    unregistered_trader_identification_number: '1234567890',
+    code_list_qualifier: '167',
+    code_list_responsible_agency: 'ZZZ',
+    name_and_address_line: '',
+    unregistered_trader_name: 'ABC TRADERS',
+    unregistered_trader_street_name_and_number: 'ABC STREET 123',
+    unregistered_trader_building_name_and_floor: 'BUILDING B FLOOR 1',
+    unregistered_trader_suburb: 'PRETORIA',
+    unregistered_trader_city: 'GAUTENG',
+    country_identification: '',
+    unregistered_trader_street_code: '0001'
+  };
+
+  const vesselsAgentData = {
+    party_qualifier: 'CG',
+    vessel_agent: 'ABCD'
+  };
+
+  const masterCargoCarrierNameData = {
+    party_qualifier: 'RL',
+    master_cargo_carrier: 'ABCD'
+  };
+
+  const sectionControlData1 = {
+    section_identification: 'D'
+  };
+
+  const customsStatusOfGoods2Data = {
+    line_number: '1',
+    tariff_code: '940161009',
+    code_list_qualifier: '108',
+    code_list_responsible_agency: 'ZZZ',
+    preference_code: '', // fix
+    trade_agreement: '100'
+  };
+
+  const goodsDescriptionData = {
+    text_subject_qualifier: 'AAA',
+    description_of_goods_1: 'Description of Goods - 1',
+    description_of_goods_2: 'Description of Goods - 2',
+    description_of_goods_3: 'Description of Goods - 3',
+    description_of_goods_4: 'Description of Goods - 4',
+    description_of_goods_5: 'Description of Goods - 5',
+  };
+
+  const additionalInformationSg30Data = {
+    text_subject_qualifier: 'ACB',
+    text_function: '',
+    additional_information_code: 'NUIN',
+  };
+
+  const customsClearanceInstructionsData = {
+    text_subject_qualifier: 'CCI',
+    text_function: '',
+    requested_procedure: '51',
+    previous_procedure: '00',
+    procedure_measure: '',
+    free_text: '',
+    to_be_coded: '1'
+  };
+
+  const countryOfOriginData = {
+    location_qualifier: '27',
+    location_identification: 'CN'
+  };
+
+  const specifiedTariffQuantity1Data = {
+    measurement_application_qualifier: 'AAR',
+    measure_unit_qualifier: 'KG',
+    measurement_value: '298.00'
+  };
+
+  const specifiedTariffQuantity2Data = {
+    measurement_application_qualifier: 'AAS',
+    measurement_dimension: 'NO',
+    measurement_significance: '13.00'
+  };
+
+  const specifiedTariffQuantity3Data = {
+    measurement_application_qualifier: 'AAT',
+    measurement_dimension: 'NX',
+    measurement_significance: '5.00'
+  };
+
+  const customsLineItemMeasurementData = {
+    measurement_application_qualifier: 'AAF',
+    measurement_dimension: 'SW',
+    measurement_significance: '7'
+  };
+
+  const warehouseKeeperData = {
+    party_qualifier: 'WH',
+    party_id_identification: '0'
+  };
+
+  const invoiceItemAmountData = {
+    monetary_amount_type: '38',
+    monetary_amount: '7654.32'
+  };
+
+  const customsValueAmountData = {
+    monetary_amount_type: '40',
+    monetary_amount: '7654.32',
+  };
+
+  const warehouseEntryNumberData = {
+    reference_qualifier: 'WE',
+    reference_number: 'ABC201903025000001',
+    line_number: '0004'
+  };
+
+  const taxDetailsData = {
+    tax_function_qualifier: '1',
+    tax_type_code: '1P1',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const taxImportsAmountData = {
+    monetary_amount_type: '161',
+    monetary_amount: '6789.12'
+  };
+
+  const importAndExportTaxData = {
+    tax_fee_function_qualifier: '1',
+    tax_type_code: 'VAT',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const taxImportsExportsAmountData = {
+    monetary_amount_type: '161',
+    monetary_amount: '77.88'
+  };
+
+  const taxExportsFeeDetailsData = {
+    tax_function_qualifier: '1',
+    tax_fee_code: 'DLA',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const taxExportAmountData = {
+    monetary_amount_type: '161',
+    monetary_amount: '123.45'
+  };
+
+  const sectionControlData2 = {
+    section_identification: 'S'
+  };
+
+  const cifcValueTaxData = {
+    tax_function_qualifier: '3',
+    tax_type_code: 'CIF',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const cifcValueAmountData = {
+    monetary_amount_type: '161',
+    monetary_amount: '785'
+  };
+
+  const transactionFeeDetailsData = {
+    fee_function_qualifier: '3',
+    fee_type_code: 'TRN',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const transactionAmountData = {
+    monetary_amount_type: '161',
+    monetary_amount: '89456',
+    currency_code: 'ADP',
+  };
+
+  const totalDutiesDueFeeData = {
+    fee_function_qualifier: '3',
+    fee_type_code: 'TDD',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const totalDutiesDueAmountData = {
+    monetary_amount_type: '161',
+    monetary_amount: '5671'
+  };
+
+  const totalVatDueFeeData = {
+    fee_function_qualifier: '3',
+    fee_type_code: 'TVD',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const overpaidExciseAccountFeeData = {
+    fee_function_qualifier: '3',
+    fee_type_code: 'AOP',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const overpaidExciseAccountAmountData = {
+    monetary_amount_type: '161',
+    monetary_amount: '9'
+  };
+
+  const underpaidExciseAccountFeeData = {
+    fee_function_qualifier: '1',
+    fee_type_code: 'AUP',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const underpaidExciseAccountAmountData = {
+    monetary_amount_type: '161',
+    monetary_amount: '15123'
+  };
+
+  const customsValueFeeData = {
+    duty_qualifier: '3',
+    duty_type_code: 'CUS',
+    code_list_qualifier: '107',
+    code_list_responsible_agency: 'ZZZ'
+  };
+
+  const customsDutyAmountData = {
+    monetary_amount_type: '161',
+    monetary_amount: '768765'
+  };
+
+  const messageTrailerData = {
+    segments: '151',
+    reference_number: '00000000155033'
+  };
+
+  const interchangeTrailerData = {
+    interchange_control_count: '0',
+    interchange_control_reference: 'X'
+  };
+
   await renderInterchangeMessage([
     { segment: interchangeHeaderSegment, data: interchangeHeaderData },
     { segment: messageHeaderSegment, data: messageHeaderData },
@@ -285,6 +665,58 @@ import {
     { segment: marksAndNumbersSegment, data: marksAndNumbersData },
     { segment: deferredPaymentReferenceSegment, data: deferredPaymentReferenceData },
     { segment: uniqueConsignmentNumberSegment, data: uniqueConsignmentNumberData },
+    { segment: additionalReferenceNumberSegment, data: additionalReferenceNumberData },
+    { segment: enquiryNumberSegment, data: enquiryNumberData },
+    { segment: detailsOfTransportSegment, data: detailsOfTransportData },
+    { segment: commercialInvoiceSegment, data: commercialInvoiceData },
+    { segment: invoiceDateSegment, data: invoiceDateData },
+    { segment: importerNameAndAddressSegment, data: importerNameAndAddressData },
+    { segment: importerReferenceSegment, data: importerReferenceData },
+    { segment: agentNameAndAddressSegment, data: agentNameAndAddressData },
+    { segment: transporterNameAndAddressSegment, data: transporterNameAndAddressData },
+    { segment: supplierNameAndAddressSegment, data: supplierNameAndAddressData },
+    { segment: exporterReferenceSegment, data: exporterReferenceData },
+    { segment: messageSenderNameSegment, data: messageSenderNameData },
+    { segment: ownerNameSegment, data: ownerNameData },
+    { segment: unregisteredTraderNameAndAddressSegment, data: unregisteredTraderNameAndAddressData },
+    { segment: vesselsAgentNameSegment, data: vesselsAgentData },
+    { segment: masterCargoCarrierNameSegment, data: masterCargoCarrierNameData },
+    { segment: sectionControlSegment, data: sectionControlData1 },
+    { segment: customsStatusOfGoods2Segment, data: customsStatusOfGoods2Data },
+    { segment: goodsDescriptionSegment, data: goodsDescriptionData },
+    { segment: additionalInformationSg30Segment, data: additionalInformationSg30Data },
+    { segment: customsClearanceInstructionsSegment, data: customsClearanceInstructionsData },
+    { segment: countryOfOriginSegment, data: countryOfOriginData },
+    { segment: specifiedTariffQuantity1Segment, data: specifiedTariffQuantity1Data },
+    { segment: specifiedTariffQuantity2Segment, data: specifiedTariffQuantity2Data },
+    { segment: specifiedTariffQuantity3Segment, data: specifiedTariffQuantity3Data },
+    { segment: customsLineItemMeasurementSegment, data: customsLineItemMeasurementData },
+    { segment: warehouseKeeperSegment, data: warehouseKeeperData },
+    { segment: invoiceItemAmountSegment, data: invoiceItemAmountData },
+    { segment: customsValueAmountSegment, data: customsValueAmountData },
+    { segment: warehouseEntryNumberSegment, data: warehouseEntryNumberData },
+    { segment: taxDetailsSegment, data: taxDetailsData },
+    { segment: taxImportsAmountSegment, data: taxImportsAmountData },
+    { segment: importAndExportTaxSegment, data: importAndExportTaxData },
+    { segment: taxImportsExportsAmountSegment, data: taxImportsExportsAmountData },
+    { segment: taxExportsFeeDetailsSegment, data: taxExportsFeeDetailsData },
+    { segment: taxExportAmountSegment, data: taxExportAmountData },
+    { segment: sectionControlSegment, data: sectionControlData2 },
+    { segment: cifcValueTaxSegment, data: cifcValueTaxData },
+    { segment: cifcValueAmountSegment, data: cifcValueAmountData },
+    { segment: transactionFeeDetailsSegment, data: transactionFeeDetailsData },
+    { segment: transactionAmountSegment, data: transactionAmountData },
+    { segment: totalDutiesDueFeeSegment, data: totalDutiesDueFeeData },
+    { segment: totalDutiesDueAmountSegment, data: totalDutiesDueAmountData },
+    { segment: totalVatDueFeeSegment, data: totalVatDueFeeData },
+    { segment: overpaidExciseAccountFeeSegment, data: overpaidExciseAccountFeeData },
+    { segment: overpaidExciseAccountAmountSegment, data: overpaidExciseAccountAmountData },
+    { segment: underpaidExciseAccountFeeSegment, data: underpaidExciseAccountFeeData },
+    { segment: underpaidExciseAccountAmountSegment, data: underpaidExciseAccountAmountData },
+    { segment: customsDutyFeeSegment, data: customsValueFeeData },
+    { segment: customsDutyAmountSegment, data: customsDutyAmountData },
+    { segment: messageTrailerSegment, data: messageTrailerData },
+    { segment: interchangeTrailerSegment, data: interchangeTrailerData },
   ]);
 
 })()

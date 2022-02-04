@@ -199,3 +199,29 @@ export const placePortOfLoadingSegment = new EdifactSegment({
     }),
   ],
 });
+
+export const countryOfOriginSegment = new EdifactSegment({
+  name: 'country_of_origin',
+  tag: 'LOC',
+  elements: [
+    new EdifactElement({
+      name: 'location_qualifier',
+      tag: '3227',
+      status: UseStatus.M,
+      _format: 'an..33'
+    }),
+    new EdifactCompositeElement({
+      name: 'location_qualifier',
+      tag: 'C517',
+      status: UseStatus.C,
+      elements: [
+        new EdifactElement({
+          name: 'location_identification',
+          tag: '3225',
+          status: UseStatus.C,
+          _format: 'an..25',
+        }),
+      ],
+    }),
+  ],
+});

@@ -39,3 +39,5 @@ export const actualArrivalDateSegment = presentationDateOfGoodsDeclarationSegmen
 export const houseWaybillDateSegment = presentationDateOfGoodsDeclarationSegment;
 
 export const transportDocumentDateSegment = presentationDateOfGoodsDeclarationSegment;
+
+export const invoiceDateSegment = presentationDateOfGoodsDeclarationSegment;

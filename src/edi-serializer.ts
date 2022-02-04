@@ -39,13 +39,13 @@ export function getElementFormat(str: string): {
 } {
   const digitIndex = str.search(/([0-9]+)/);
   if (!digitIndex) {
-    throw new Error('No length found')
+    throw new Error('No length found in ' + str);
   }
   const filtered = patterns.filter((pattern: Pattern) => {
     return pattern?.regex.test(str);
   });
   if (filtered.length === 0 || filtered.length > 1) {
-    throw new Error('Invalid format')
+    throw new Error('Invalid format ' + str);
   }
   const pattern = filtered[0];
   const split = pattern?.name?.split('_');
@@ -209,23 +209,26 @@ export function validateValue(element: EdifactElement, value: string): boolean {
 export const renderSegment = (segment: EdifactSegment, data): string => {
   let result = '';
   for (const element of segment.elements) {
-    result += '+';
+    // result += '+';
+    let res = '';
+    let isSubLast = false;
     if (element instanceof EdifactCompositeElement) {
       for (const [i, dataElement] of Object.entries(element.elements)) {
+        if (+i === element.elements.length - 1) isSubLast = true;
         const value = data[dataElement.name];
         if ((value === null || value === undefined)) {
           if ((dataElement.status === UseStatus.M)) {
-            throw new Error(`'${element?.name} -> ${dataElement.name}' can not be ${value}`)
+            throw new Error(`'${segment?.name} -> ${element?.name} -> ${dataElement.name}' can not be ${value}`)
           } else {
             break;
           }
         }
         const condition = validateValue(dataElement, value);
         if (!condition) {
-          throw new Error(`'${element?.name} -> ${dataElement.name}' can not be ${condition}`)
+          throw new Error(`'${element?.name} -> ${element?.name} -> ${dataElement.name}' can not be ${condition}`)
         }
         if (condition) {
-          result += ((+i > 0) ? ':' : '') + value;
+          res += ((+i > 0) ? ':' : '') + value;
         }
       }
     }
@@ -233,19 +236,23 @@ export const renderSegment = (segment: EdifactSegment, data): string => {
       const value = data[element.name];
       if (value === null || value === undefined) {
         if (element.status === UseStatus.M) {
-          throw new Error(`'${element.name}' can not be ${value}`)
+          throw new Error(`'${element?.name} -> ${element.name}' can not be ${value}`)
         } else {
           break;
         }
       }
       const condition = validateValue(element, value);
       if (!condition) {
-        throw new Error(`'${element.name}' can not be ${condition}`)
+        throw new Error(`'${element?.name} -> ${element.name}' can not be ${condition}`)
       }
       if (condition) {
-        result += data[element.name]
+        res += data[element.name]
       }
     }
+    if (element.status === UseStatus.C && res === '' && isSubLast) {
+      continue;
+    }
+    result += '+' + res;
   }
   return `${segment.tag}${result}'`
 }
@@ -258,6 +265,7 @@ export class Interchange {
 }
 
 export interface Message {
+  counter?: number;
   segment: EdifactSegment;
   data: any;
 }
